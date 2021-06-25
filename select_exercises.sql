@@ -1,3 +1,5 @@
+USE albums_db;
+
 DESCRIBE albums; -- id is primary key 
 
 SELECT name
@@ -32,7 +34,9 @@ SELECT genre
 FROM albums
 WHERE name = 'Nevermind'; -- Grunge, Alternative rock
 
-SELECT name
+SELECT name , release_date
+FROM albums
+WHERE release_date BETWEEN 1990 and 1999; -- 11 albums were released in the 90s
 FROM albums
 WHERE sales < 20; -- 13 Albums had sales less than $20M
 
