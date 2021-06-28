@@ -38,7 +38,7 @@ FROM employees
 WHERE birth_date LIKE '%12-25'
 	AND hire_date LIKE '199%'
 ORDER BY hire_date
-LIMIT 5 OFFSET 10;
+LIMIT 5 OFFSET 45;
 /* 
 Kendra	Stafford
 Sanjai	Isaac
