@@ -30,16 +30,11 @@ SELECT emp_no, first_name, last_name
 FROM employees -- Utilizing the emplyees table
 WHERE emp_no IN -- emp_no links to the dept_emp table 
 	(
-	SELECT DISTINCT(emp_no) -- Removes duplicate employees that have worked in multiple departments
+	SELECT emp_no -- Removes duplicate employees that have worked in multiple departments
 	FROM dept_emp
 	WHERE to_date < NOW()
-/* 		AND emp_no != 
-		(SELECT emp_no
-		FROM dept_emp
-		WHERE to_date > NOW() */
-		) -- All emplyees that have left a department 
 	)
-ORDER BY emp_no; -- 85108 employees have left the company ** NOT CORRECT YET ** still need to remove current emp 
+ORDER BY emp_no; -- 85108 employees have left the company  
 
 -- 4. Find all the current department managers that are female. List their names in a comment in your code.
 	
@@ -108,11 +103,11 @@ WHERE emp_no IN
 ORDER BY last_name; -- 78 results, but that does not seem correct 
 
 -- What percentage of all salaries is this?
-SELECT COUNT(*)
-FROM employees
-WHERE emp_no IN 
+SELECT highest_salaries / all_salaries
+FROM salaries
+WHERE highest_salaries IN
 	(
-	SELECT emp_no 
+	SELECT COUNT(*) AS highest_salaries  
 	FROM salaries
 	WHERE to_date > NOW()
 		AND salary > 
@@ -121,7 +116,13 @@ WHERE emp_no IN
 			FROM salaries
 			)
 	)
+	AND all_salaries IN
+		(
+		SELECT COUNT(*) AS all_salaries
+		FROM salaries
+		)
 ;
+
 
 -- Bonus
 -- 1. Find all the department names that currently have female managers.
