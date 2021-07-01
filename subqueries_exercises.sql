@@ -10,7 +10,13 @@ WHERE hire_date IN -- hire_date is how we are sorting
 	FROM employees
 	WHERE emp_no = 101010 -- Subquery to select matching employees
 	) 
-ORDER BY last_name; -- 69 results
+	AND emp_no IN
+		(
+		SELECT emp_no
+		FROM dept_emp
+		WHERE to_date > NOW() -- To make sure current employees
+		)
+ORDER BY last_name; -- 55 results
 		
 -- 2. Find all the titles ever held by all current employees with the first name Aamod.
 
@@ -22,6 +28,12 @@ WHERE emp_no IN -- Employee number is what links the tables
 	FROM employees
 	WHERE first_name = "Aamod" -- Selecting only the emp number with first name Aamod
 	)
+	AND emp_no IN
+		(
+		SELECT emp_no
+		FROM dept_emp
+		WHERE to_date > NOW() -- To make sure current employees
+		)
 GROUP BY title
 ORDER BY title; -- Organizing
 
@@ -34,7 +46,16 @@ WHERE emp_no IN -- emp_no links to the dept_emp table
 	FROM dept_emp
 	WHERE to_date < NOW()
 	)
-ORDER BY emp_no; -- 85108 employees have left the company  
+ORDER BY emp_no; -- 85108 employees have left the company ** Not correct
+
+SELECT COUNT(*)
+FROM employees
+WHERE emp_no NOT IN 
+	(
+	SELECT emp_no 
+	FROM dept_emp
+	WHERE to_date > NOW()
+	); -- Correct answer
 
 -- 4. Find all the current department managers that are female. List their names in a comment in your code.
 	
@@ -73,19 +94,20 @@ ORDER BY last_name; -- 154543 results
 
 -- 6. How many current salaries are within 1 standard deviation of the current highest salary? (Hint: you can use a built in function to calculate the standard deviation.) What percentage of all salaries is this?
 
-SELECT STDDEV(salary)
+SELECT STDDEV(salary) -- Checking the STDDEV function
 FROM salaries; -- 16904.82
 
-SELECT salary
+SELECT salary -- One way to find highest salary
 FROM salaries
 ORDER BY salary DESC
 LIMIT 1; -- 158220
 
-SELECT MAX(salary)
+SELECT MAX(salary) -- Easier way to find highest salary
 FROM salaries; -- 158220
 
-SELECT MAX(salary) - STDDEV(salary)
-FROM salaries; -- 141315.17
+SELECT MAX(salary) - STDDEV(salary) -- Highest salary minus 1 standard deviation
+FROM salaries
+WHERE to_date > NOW(); -- 140910.04
 
 SELECT first_name, last_name
 FROM employees
@@ -98,9 +120,10 @@ WHERE emp_no IN
 			(
 			SELECT MAX(salary) - STDDEV(salary)
 			FROM salaries
+			WHERE to_date > NOW()
 			)
 	)
-ORDER BY last_name; -- 78 results, but that does not seem correct 
+ORDER BY last_name; -- 83 results, but that does not seem correct 
 
 -- What percentage of all salaries is this?
 SELECT highest_salaries / all_salaries
