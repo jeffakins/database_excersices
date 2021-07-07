@@ -76,5 +76,56 @@ DROP TABLE germain_1469.sakila_payment; -- If needed
 
 -- 3. Find out how the current average pay in each department compares to the overall, historical average pay. In order to make the comparison easier, you should use the Z-score for salaries. In terms of salary, what is the best department right now to work for? The worst?
 
+-- First temp table
+CREATE TEMPORARY TABLE germain_1469.salary_compare AS
+SELECT dept_name, salary, salaries.to_date AS "salary_to_date"
+FROM departments
+JOIN dept_emp ON dept_emp.dept_no = departments.dept_no 
+JOIN salaries ON salaries.emp_no = dept_emp.emp_no;
 
+SELECT * 
+FROM germain_1469.salary_compare;
+
+SELECT STD(salary) AS historic_std
+FROM salaries; -- historical standard deviation
+
+SELECT AVG(salary) AS historic_average
+FROM germain_1469.salary_compare; -- historical average salary
+	
+	
+-- Second temp table	with just department name and current salary averages
+CREATE TEMPORARY TABLE germain_1469.salary_zscore AS	
+SELECT dept_name, AVG(salary) AS avg_salary
+FROM germain_1469.salary_compare
+WHERE salary_to_date > NOW()
+GROUP BY dept_name; -- Created second table with just department name and current salary averages
+
+SELECT *
+FROM germain_1469.salary_zscore; -- To check
+
+-- DROP TABLE germain_1469.salary_zscore; -- If needed
+
+ALTER TABLE germain_1469.salary_zscore
+	ADD historic_average DECIMAL(20, 2); -- To add historical average column
+ALTER TABLE germain_1469.salary_zscore
+	ADD historic_std DECIMAL(20, 2); -- To add historical stddev column
+ALTER TABLE germain_1469.salary_zscore
+	ADD zscore DECIMAL(20, 2); -- To add zscore column
+	
+SELECT *
+FROM germain_1469.salary_zscore; -- To check
+	
+UPDATE germain_1469.salary_zscore
+	SET historic_average = (SELECT AVG(salary) FROM germain_1469.salary_compare);
+	-- Adds the historic salary average value to the historic_average column
+UPDATE germain_1469.salary_zscore
+	SET historic_std = (SELECT STD(salary) FROM salaries);
+	-- Adds the historic stddev value to the historic_std column
+UPDATE germain_1469.salary_zscore
+	SET zscore = (avg_salary - historic_average) / historic_std;
+	-- Zscore = (x - population_mean) / standard_deviation
+
+SELECT *
+FROM germain_1469.salary_zscore
+ORDER BY zscore DESC; -- Results
 
